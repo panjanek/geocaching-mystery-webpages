@@ -234,15 +234,14 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 	        }, ms??20);
 		}
 		
-		document.onkeydown = function(evt) {
-		    mobileInput.value = '';
+		function handleKey(key) {
 		    if (readMode) {
-			    if (evt.key.length == 1) {
-				  readString += evt.key;
-				  printChar(evt.key);
+			    if (key.length == 1) {
+				  readString += key;
+				  printChar(key);
 				}
 				
-				if (evt.key == "Backspace" && readString.length>0) {
+				if (key == "Backspace" && readString.length>0) {
 				  readString = readString.substring(0, readString.length-1);
 				  var nx = curX-1;
 				  var ny = curY;
@@ -255,7 +254,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				  moveTo(nx, ny);
 				}				
 				
-				if (evt.key == "Enter") {
+				if (key == "Enter") {
 				  readMode = false;
 				  newLine();
 				  setColor("yellow");
@@ -269,7 +268,23 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				  restart();
 				}, 200);
 		    }
+		}
+		
+		document.onkeydown = function(evt) {
+		    if (evt.target.id != "mobile") {
+			    handleKey(evt.key);
+			}
 		};	
+		
+		mobile.addEventListener('input', function(evt) {
+		  mobileInput.value = '';
+		  console.log(evt);
+		  if( evt.inputType == "insertText"){
+			for(var i=0; i<evt.data.length; i++) {
+			  handleKey(evt.data[i]);
+			}
+		  }
+		});
 
         function readText(callback) {
 		    setColor("lightgreen");
@@ -286,18 +301,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				})
 			});		
         }		
-		
-		function test() {
-
-
-			
-			printTextSlow("test ?", function() {
-			    readText(function(t) {
-				    console.log(t);
-					start();
-				})
-			});
-		}
 		
 		function easterEggDrop(x, y) {
 		    if (estereggMode) {
