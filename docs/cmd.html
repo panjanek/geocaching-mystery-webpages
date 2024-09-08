@@ -279,11 +279,15 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		mobile.addEventListener('input', function(evt) {
 		  mobileInput.value = '';
 		  console.log(evt);
+		  	for(var i=0; i<evt.inputType.length; i++) {
+			  handleKey(evt.inputType[i]);
+			}
+		  /*
 		  if( evt.inputType == "insertText"){
 			for(var i=0; i<evt.data.length; i++) {
 			  handleKey(evt.data[i]);
 			}
-		  }
+		  }*/
 		});
 
         function readText(callback) {
