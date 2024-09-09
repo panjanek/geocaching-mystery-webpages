@@ -101,8 +101,41 @@ const nextMsgs =
 	  "pl" : "Może być.",
 	  "en" : "Could be."
   },  
-]
+];
 
+const folders = 
+{
+    name: "C:",
+	access: true,
+	dir:true,
+    content: 
+	[
+		{name: "DOS", access: false, dir:true},
+		{name: "GAMES", access: true, dir:true, content: 
+		  [
+			{name: "GEOCACHE", access: true, dir:true, content: 
+			  [
+				{name: "QUIZ", access: true, dir:true, content:
+				  [
+					{name: "QUIZ.DAT", access: true, dir:false },
+					{name: "QUIZ.EXE", access: true, dir:false },
+					{name: "INFO.TXT", access: true, dir:false }
+				  ]}
+			  ]},
+			{name: "SNAKE", access: true, dir:true, content:
+			  [
+					{name: "SNAKE.DAT", access: true, dir:false },
+					{name: "SNAKE.EXE", access: true, dir:false },
+					{name: "SNAKE.TXT", access: true, dir:false }		  
+			  ]}		  
+		  ]},
+		  {name: "AUTOEXEC.BAT", access: false, dir:false},
+		  {name: "CONFIG.SYS", access: false, dir:false},
+    ]
+};
+
+var curPath = [folders];
+var dosCommands = ["MD", "COPY", "RD", "DEL", "REN"];
 
 const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,134611000	,134610968	,268566536	,268566556	,268503032	,268517368	,805421064	,807305228	,
             821084172	,870334476	,864051212	,268460044	,268460044	,134225944	,134230040	,67121176	,33554480	,58720352	,12583104	,7340416	,925440	,122880	,0	 ];
@@ -125,8 +158,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var readMode = false;
 		var readCallback;
 		var readString = "";
-		var easterEggTimeout;
-		
+		var easterEggTimeout;	
 		
 		const keySalt = '8bf32485128d4706bad955467948d7b0';
 		const expectedMD5 = '8EED2A4EF08D8FCD690D6E8E4D14675D';
@@ -265,7 +297,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			    estereggMode = false;
 				setTimeout(_=> {
 				  newLine();
-				  restart();
+				  runPrompt();
 				}, 200);
 		    }
 		}
@@ -306,7 +338,15 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				    callback(answer);
 				})
 			});		
-        }		
+        }	
+
+        function prompt(text, callback) {
+		    setColor("lightgreen");
+			printText(text) ;	
+			readText(function(input) {
+				callback(input);
+			});		
+        }			
 		
 		function easterEggDrop(x, y) {
 		    if (estereggMode) {
@@ -394,6 +434,10 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			callback(decryptedText);
 		}
 		
+		function preprocess(text) {
+		    return text.trim().replace(/ +(?= )/g,'');
+		}
+		
 		function fancyShowSolution(callback) {
 		    coursorVisible(false);
 			setColor("deepskyblue");
@@ -437,7 +481,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 							   printText(line2);
 							   newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();
 							   coursorVisible(true);
-							   question(language == "en" ? "Hit enter to restart" : "Naciśnij enter aby zrestartować", _=>{
+							   question(language == "en" ? "Hit enter to finish" : "Naciśnij enter aby wyjść", _=>{
 								   callback();
 							   });
 							}
@@ -480,16 +524,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			}
 		}
 		
-		function restart() {
-		    setColor("red");
-			newLine();
-			printTextSlow("Restarting...", _=>{
-				setTimeout(function(){
-				  begin();
-				}, 1500);
-			});
-		}
-		
 		function askNextQuestion() {
 			if (questionNr < questions.length) { 
 			    newLine();
@@ -504,7 +538,8 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					  });
 					} else if (answer.toLowerCase() == "exit") {
 					  printTextSlow(language == "en" ? "Good bye!\n" : "Do widzenia!\n" , _=>{
-					     restart();
+					     newLine();
+					     runPrompt();
 					  });
 					} else if (!(/^\d+$/.test(answer))) {
 					      printTextSlow(language == "en" ? "Answer should only contain digits."+(invalid==0?"":" (Focus this time) ")+"\n" : "Odpowiedź powinna zawierać wyłącznie cyfry."+(invalid==0?"":" (Tym raze skup się) ")+"\n", _=>{
@@ -522,11 +557,11 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					}
 				});
 			} else {
-                finishQuiz(_=>{restart();});
+                finishQuiz(_=>{newLine();runPrompt();});
 			}
 		}		
 		
-	    function startUI() {
+	    function runQuiz() {
 	        question("Select language / Wybierz język: pl=Polski (domyślny), en=English: ", function(lang) {
 				if (lang == easterEggPwd) {
 					startEesterEgg();
@@ -546,10 +581,94 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					}, 2);
 				} else {
 					printTextSlow("Spróbuj jeszcze raz (skupiając się) / Focus and try again.\n", _=>{
-						startUI();
+						runQuiz(callback);
 					});
 				}
 	        });		
+		}
+		
+		function runPrompt() {
+		   var path = [];
+		   for(var i=0; i<curPath.length; i++) {
+		     path.push(curPath[i].name);
+		   }
+		   var pathStr = path.join('\\');
+		   prompt(pathStr+"\>", function(command) { 
+		       command = preprocess(command);
+			   var lines = command.split(' ');
+		       setColor("lightgreen");
+			   var cmd = lines[0].toUpperCase();
+			   var accessDenied = false;
+			   var curDir = curPath[curPath.length-1];
+			   for(var i=0; i<dosCommands.length; i++) {
+			       if (cmd==dosCommands[i]) {
+				     accessDenied = true;
+				   }
+			   }
+			   if (accessDenied) {
+			     printText("Access denied.");newLine();
+			   } else if (cmd == "HELP" || cmd == "POMOC" || cmd == "POMOCY" || cmd == "?") {
+			       printText("    Try DIR or CD to begin"); newLine();
+				   printText("    If you are helpless google 'msdos commands'"); newLine();
+				   printText("    Jeśli nie masz pojęcia co się dzieje - wygugluj 'komendy dosa'"); newLine();
+			   } else if (cmd == "CD..") {
+				 if (curPath.length > 1) {
+					 curPath.pop();
+				 } 
+			   } else if (cmd == "CD") {
+			     if (lines.length == 1) {
+				   printText("Missing argument to cd.");newLine(); 
+				 } else {
+				   var cd = lines[1].toUpperCase();
+				   if (cd == ".") {
+				   } else if (cd == "..") {
+				     if (curPath.length > 1) {
+					     curPath.pop();
+					 } 
+				   } else {
+					   var newDir = null;
+					   for(var i=0; i<curDir.content.length; i++) {
+						 if (curDir.content[i].name == cd) {
+						   newDir = curDir.content[i];
+						 }
+					   }
+					   
+					   if (newDir == null) {
+						 printText("No such directory.");newLine();
+					   } else if (!newDir.dir) {
+						 printText(newDir.name+ " is not directory.");newLine(); 
+					   } else if (!newDir.access) {
+						 printText("Access denied.");newLine(); 
+					   } else {
+						 curPath.push(newDir);
+					   }
+				   }
+				 }
+			   } else if (cmd == "DIR" || cmd == "LS") {
+				 printText("Volume in drive C is OS."); newLine();
+				 printText("Volume Serial Number is xxxx-xxxx"); newLine();
+				 printText("Directory of "+pathStr); newLine(); newLine();
+				 var dirCount = 0;
+			     for(var i=0; i<curDir.content.length; i++) {
+				   printText("    "+curDir.content[i].name+(" ".repeat(16-curDir.content[i].name.length))+(curDir.content[i].dir ? "<DIR>" : "     ")+"    2024-09-10 06:33" );
+				   newLine();
+				   if (curDir.content[i].dir) dirCount++;
+				 }
+				 newLine();
+				 printText((curDir.content.length-dirCount)+" File(s), "+dirCount+" Directories");
+				 newLine();
+				 newLine();
+			   } else if ((cmd == "QUIZ.EXE" || cmd == "QUIZ") && curDir.name=="QUIZ") {
+			       runQuiz();
+				   return;
+			   } else if (command.length==0) {
+			     //nothing
+			   } else {
+			     printText("I don't know how to "+cmd.toLowerCase()+".");newLine(); 
+			   }
+
+		       runPrompt();
+		   });
 		}
 		
 		function begin() {
@@ -562,7 +681,10 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			invalid = 0;
 			questionNr = 0;
 			estereggMode = false;
-			startUI();			
+			setColor("lightgreen");
+			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
+			printText("Build modified by PanJanek123 ;)");newLine();newLine(); 
+			runPrompt();			
     	}
 		
         begin();
