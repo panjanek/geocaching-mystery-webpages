@@ -111,10 +111,16 @@ const folders =
     content: 
 	[
 		{name: "DOS", access: false, dir:true},
-		{name: "GAMES", access: true, dir:true, content: 
+		{name: "DOKUMENTY", access: true, dir:true, content: 
+		  [
+		    {name: "POMYSLY.TXT", access: true, dir:false, data: "\n1. Nocny kesz ze światełkiem trytowym?\n2. Kesz o retro computing, np. Atari. Emulator Atari online?\n3. Mała stara konsolka w keszu ze smodyfikowaną grą która pokaże współrzędne (data frog?)\n" },
+		  ]
+		},
+		{name: "GRY", access: true, dir:true, content: 
 		  [
 			{name: "GEOCACHE", access: true, dir:true, content: 
 			  [
+			    {name: "LOG.TXT", access: true, dir:false, data: "\nFTF:\nSTF:\nTTF:\n" },
 				{name: "QUIZ", access: true, dir:true, content:
 				  [
 					{name: "QUIZ.DAT", access: true, dir:false },
@@ -129,13 +135,18 @@ const folders =
 					{name: "SNAKE.TXT", access: true, dir:false }		  
 			  ]}		  
 		  ]},
-		  {name: "AUTOEXEC.BAT", access: false, dir:false},
-		  {name: "CONFIG.SYS", access: false, dir:false},
+		  {name: "AUTOEXEC.BAT", access: true, dir:false, data:"SET TRM=C:\\WIN311\\TEMP\nSET TEMP=C:\\WIN311\\TEMP\nSET BLASTER=A220 I5 D1 T1" },
+		  {name: "CONFIG.SYS", access: true, dir:false, data:"NUMLOCK = OFF\nDOS=HIGH,UMB\nFILES=30\nBUFFERS=20"},
+		  {name: "COMMAND.COM", access: false, dir:false},
+		  {name: "WIN311", access: false, dir:true},
     ]
 };
 
 var curPath = [folders];
-var dosCommands = ["MD", "COPY", "RD", "DEL", "REN"];
+var dosCommands = ["MD", "COPY", "RD", "DEL", "REN", "MKDIR", "RMDIR", "EDIT", "FORMAT", "XCOPY", "TREE", "ATTRIB", "MODE", "DISKCOPY", "MEM", "SCANDISK",
+                   "UNDELETE", "ASSIGN", "FDISK", "BACKUP", "RESTORE", "MSCDEX", "SYS", "SHARE", "SMARTDRV", "SETVER", "FC", "FIND", "PATH", "SET", "SUBST",
+				   "EDLIN", "DEBUG", "HIMEM.SYS", "UNFORMAT", "GRAPHICS", "QBASIC", "KEYB", "CHOICE", "DISKCOMP", "PRINT", "SORT", "APPEND", "ASSOC",
+				   "LABEL", "RECOVER", "FASTOPEN", "GOTO", "SHIFT", "JOIN", "BATCH", "CALL"];
 
 const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,134611000	,134610968	,268566536	,268566556	,268503032	,268517368	,805421064	,807305228	,
             821084172	,870334476	,864051212	,268460044	,268460044	,134225944	,134230040	,67121176	,33554480	,58720352	,12583104	,7340416	,925440	,122880	,0	 ];
@@ -250,7 +261,10 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 		function printText(text){
           for(var i=0; i<text.length; i++) {
-		      printChar(text[i]);
+		      if (text[i]=='\n')
+			    newLine();
+			  else
+		        printChar(text[i]);
 		  }
 		}
 		
@@ -588,6 +602,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		}
 		
 		function runPrompt() {
+		   coursorVisible(true);
 		   var path = [];
 		   for(var i=0; i<curPath.length; i++) {
 		     path.push(curPath[i].name);
@@ -607,7 +622,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			   }
 			   if (accessDenied) {
 			     printText("Access denied.");newLine();
-			   } else if (cmd == "HELP" || cmd == "POMOC" || cmd == "POMOCY" || cmd == "?") {
+			   } else if (cmd == "HELP" || cmd == "POMOC" || cmd == "POMOCY" || cmd == "?" || cmd == "FASTHELP") {
 			       printText("    Try DIR or CD to begin"); newLine();
 				   printText("    If you are helpless google 'msdos commands'"); newLine();
 				   printText("    Jeśli nie masz pojęcia co się dzieje - wygugluj 'komendy dosa'"); newLine();
@@ -615,6 +630,53 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				 if (curPath.length > 1) {
 					 curPath.pop();
 				 } 
+			   } else if (cmd == "ECHO") {
+			     if (lines.length>1) {
+				   printText(command.substring(5));newLine();
+				 }
+			   } else if (cmd == "CHKDSK") {
+			     if (lines.length == 1) {
+				   printText("Missing argument to CHKDSK.");newLine(); 
+				 } else {
+				   if (lines[1].toUpperCase() == "C:") {
+				      printText("The type of the file system is FAT16\nCHKDSK is veryfying files...completed\nCHKDSK is veryfying indexes...completed\n\n    168 234 612 KB Total disk space.\n    84 123 417 KB in 395 files.\n    0 KB in bad sectors.\n    76 340 500 KB  available on disk.\n\n");newLine(); 
+				   } else {
+				     printText("No such disk: "+lines[1]);newLine(); 
+				   }
+				 }
+			   } else if (cmd == "TIME" || cmd == "DATE" || cmd == "DATETIME") {
+			       printText(new Date().toLocaleString()); newLine();
+			   } else if (cmd == "VOL") {
+			       printText("Volume in drive C is GEOCACHE:)\n");
+			   } else if (cmd==":)") {
+			       startEesterEgg();
+				   return;
+			   } else if (cmd == "TYPE" || cmd == "MORE") {
+			     if (lines.length == 1) {
+				   printText("Missing argument to TYPE.");newLine(); 
+				 } else {
+				   var type = lines[1].toUpperCase();
+				   var file = null;
+				   for(var i=0; i<curDir.content.length; i++) {
+					 if (curDir.content[i].name == type) {
+					   file = curDir.content[i];
+					 }
+				   }
+				   
+				   if (file == null) {
+					 printText("No such file.");newLine();
+				   } else if (file.dir) {
+					 printText(file.name+ " is directory.");newLine(); 
+				   } else if (!file.access) {
+					 printText("Access denied.");newLine(); 
+				   } else if (file.data) {
+					 var txt = file.data;
+					 printText(file.data);
+					 newLine();
+				   } else {
+				     printText("File contains binary data that cannot be displayed.");newLine(); 
+				   }
+				 }
 			   } else if (cmd == "CD") {
 			     if (lines.length == 1) {
 				   printText("Missing argument to cd.");newLine(); 
