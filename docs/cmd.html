@@ -1147,17 +1147,16 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			   } else if (curDir.name=="DEMOS") {
 			       var file = null;
 				   for(var i=0; i<curDir.content.length; i++) {
-				     var file = null;
 					 if (curDir.content[i].name.toUpperCase() == cmd.toUpperCase() || curDir.content[i].name.toUpperCase() == "./"+cmd.toUpperCase()) {
 					   file = curDir.content[i];
 					 }
-					 if (file==null) {
-					   printText("I don't know how to "+cmd.toLowerCase()+".");newLine(); 
-					 } else {
+			       }
+				   if (file==null) {
+					  printText("I don't know how to "+cmd.toLowerCase()+".");newLine(); 
+				   } else {
 					   printText("Opening external program... (allow popup windows / zezwól na wyskakujące okienka)\n\n");
 					   setTimeout(_=>{window.open(file.url, '_blank').focus(); runPrompt();}, 1500);
 					   return;
-					 }
 				   }
 			   } else {
 			     printText("I don't know how to "+cmd.toLowerCase()+".");newLine(); 
