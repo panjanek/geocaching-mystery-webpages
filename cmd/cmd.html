@@ -123,6 +123,13 @@ const folders =
 			  {name: "MUSIC.EXE", access:true, dir:false, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
 		  ]
 		},
+		{name: "PROGRAMY", access: true, dir:true, content: 
+		  [
+		      {name: "NC", access:false, dir:true},
+			  {name: "MKSVIR", access:false, dir:true},
+			  {name: "TAG", access:false, dir:true}
+		  ]
+		},		
 		{name: "GRY", access: true, dir:true, content: 
 		  [
 			{name: "GEOCACHE", access: true, dir:true, content: 
@@ -136,6 +143,12 @@ const folders =
 					{name: "INFO.TXT", access: true, dir:false }
 				  ]}
 			  ]},
+			{name: "MAZE", access: true, dir:true, content:
+			  [
+					{name: "MAZE.DAT", access: true, dir:false },
+					{name: "MAZE.EXE", access: true, dir:false },
+					{name: "MAZE.TXT", access: true, dir:false }		  
+			  ]},			  
 			{name: "SNAKE", access: true, dir:true, content:
 			  [
 					{name: "SNAKE.DAT", access: true, dir:false },
@@ -187,6 +200,20 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var snakeScore = 0;
 		var snakeDelay = 200;
 		var snakeGameOver = false;
+	    var mazeSize = 10;
+	    var maze;
+	    var mazePx = 0;
+	    var mazePy = 0;
+	    var mazeNx = 0;
+	    var mazeNy = 0;	  
+	    var mazeAnimationStarted = 0;
+	    var mazeAnimationCallback;
+	    var mazeProgress = 0;
+	    var mazeAllowed = [];		
+		var mazeMode = false;
+		var mazeSteps = 0;
+		var mazeScore = [];
+		var mazeLevel = 0;
 		
 		const keySalt = '8bf32485128d4706bad955467948d7b0';
 		const expectedMD5 = '8EED2A4EF08D8FCD690D6E8E4D14675D';
@@ -350,8 +377,39 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					snakeExit();
 				  }
 			  }
+			} else if (mazeMode) {
+			    if (mazeLevel == 51) {
+			      if ((key=="Escape" || key == "d" || key == "D") || key == "q" || key == "Q" || key == "x" || key=="X") {
+                    mazeExit();
+			      } else if (key=="p" || key == "P") {
+				    mazeScore = [];
+                    runMaze(1);
+			      }
+				} else {
+					var m = maze[mazePy*mazeSize+mazePx];
+					if ((key == "ArrowDown") && (mazePy<mazeSize-1) && ((m&8)!=0) && mazeProgress==0) {
+					  mazeStartAnimation(mazePx, mazePy+1, drawMaze);
+					} else if ((key == "ArrowRight") && (mazePx<mazeSize-1) && ((m&4)!=0) && mazeProgress==0) {
+					  mazeStartAnimation(mazePx+1, mazePy, drawMaze);
+					} else if ((key == "ArrowUp") && (mazePy>0) && ((m&2)!=0) && mazeProgress==0) {
+					  mazeStartAnimation(mazePx, mazePy-1, drawMaze);
+					} else if ((key == "ArrowLeft") && (mazePx>0) && ((m&1)!=0) && mazeProgress==0) {
+					  mazeStartAnimation(mazePx-1, mazePy, drawMaze);
+					} else if ((key=="Escape" || key == "d" || key == "D") || key == "q" || key == "Q" || key == "x" || key=="X") {
+					  mazeExit();
+					}
+				}
 			}
 		}
+		
+		document.onkeydown = function(evt) {
+		    if (snakeMode || mazeMode) {
+		      evt.preventDefault();
+			}
+		    if (evt.target.id != "mobile") {
+			    handleKey(evt.key);
+			}
+		};		
 		
 		function snakeExit() {
 		    clearInterval(snakeInterval);
@@ -359,8 +417,19 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			ctx.fillRect(0, 0, w, h);	
             moveTo(0,0);
             coursorVisible(true);
+			snakeMode = false;
             runPrompt();			
 		}
+		
+		function mazeExit() {
+			ctx.fillStyle = "black";
+			ctx.fillRect(0, 0, w, h);	
+            moveTo(0,0);
+            coursorVisible(true);
+			mazeMode = false;
+			mazeScore = [];
+            runPrompt();			
+		}		
 		
 		function changeSnakeDir(newDir) {
 			snakeDir = newDir; 
@@ -369,14 +438,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			snakeInterval = setInterval(snakeStep, snakeDelay);		
 		}
 		
-		document.onkeydown = function(evt) {
-		    if (snakeMode) {
-		      evt.preventDefault();
-			}
-		    if (evt.target.id != "mobile") {
-			    handleKey(evt.key);
-			}
-		};	
+	
 		
 		mobile.addEventListener('input', function(evt) {
 		  
@@ -651,7 +713,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					}, 2);
 				} else {
 					printTextSlow("Spróbuj jeszcze raz (skupiając się) / Focus and try again.\n", _=>{
-						runQuiz(callback);
+						runQuiz();
 					});
 				}
 	        });		
@@ -751,6 +813,206 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			snakeInterval = setInterval(snakeStep, snakeDelay);
 		}
 		
+		  function splitmix32(a) {
+		   return function() {
+			 a |= 0;
+			 a = a + 0x9e3779b9 | 0;
+			 let t = a ^ a >>> 16;
+			 t = Math.imul(t, 0x21f0aaad);
+			 t = t ^ t >>> 15;
+			 t = Math.imul(t, 0x735a2d97);
+			 return ((t = t ^ t >>> 15) >>> 0);
+			}
+		  }
+		  
+		  function shuffle(array, prng) {
+			let currentIndex = array.length;
+			while (currentIndex != 0) {
+			  let randomIndex = prng() % currentIndex;
+			  currentIndex--;
+			  [array[currentIndex], array[randomIndex]] = [
+				array[randomIndex], array[currentIndex]];
+			}
+		  }
+		  
+		  function traverse(maze, x, y, visited, n, prng) {
+			visited[y*n+x] = true;
+			var d = [[0, -1,0],[1, 0,-1], [2, 1,0], [3, 0, 1]];
+			shuffle(d, prng);
+			for(var k=0; k<d.length; k++) {
+			  var index = d[k][0];
+			  var dx = d[k][1];
+			  var dy = d[k][2];
+			  if (x+dx>=0 && x+dx<n && y+dy>=0 && y+dy<n && !visited[(y+dy)*n + (x+dx)]) {
+				  maze[y*n+x] = maze[y*n+x] | (1<<index);
+				  maze[(y+dy)*n+x+dx] = maze[(y+dy)*n+x+dx] | (1<<((index+2)%4));
+				  traverse(maze, x+dx, y+dy, visited, n, prng);
+			  }
+			}
+		  }		
+		  
+		  function createMaze(n, seed) {
+			const prng = splitmix32(seed);
+			var visited = new Array(n*n).fill(false);
+			var maze = new Array(n*n).fill(0);
+			traverse(maze, 0, 0, visited, n, prng);
+			return maze;
+		  }		  
+
+		  function drawLine(ctx, x1,y1, x2, y2) {
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.closePath();
+			ctx.stroke();
+		  }
+	  
+		  function drawMaze() { 
+			var topMargin = 8;
+			var leftMargin = (w-h)/2 - 2*topMargin;
+			var d = (h-2*8)/mazeSize;
+			ctx.fillStyle = "black";
+			ctx.fillRect(0, 0, w, h);
+			allowed = [];
+			for(var x=0; x<mazeSize; x++) {
+			  for(var y=0; y<mazeSize; y++) {
+				var x1 = x*d;
+				var y1 = y*d;
+				var x2 = x*d+d;
+				var y2 = y*d+d;
+				var tile = {x: leftMargin+x1+1, y: topMargin+y1+1, w: x2-x1-2, h: y2-y1-2};
+				var m = maze[y*mazeSize+x];
+				ctx.strokeStyle = 'lightgreen';
+				if ((m&1)==0) drawLine(ctx, leftMargin+x1,topMargin+y1,leftMargin+x1,topMargin+y2); else if (x==mazePx+1 && y == mazePy) allowed.push(tile);
+				if ((m&2)==0) drawLine(ctx, leftMargin+x1,topMargin+y1,leftMargin+x2,topMargin+y1); else if (x==mazePx && y == mazePy+1) allowed.push(tile);
+				if ((m&4)==0) drawLine(ctx, leftMargin+x2,topMargin+y1,leftMargin+x2,topMargin+y2); else if (x==mazePx-1 && y == mazePy) allowed.push(tile);
+				if ((m&8)==0) drawLine(ctx, leftMargin+x2,topMargin+y2,leftMargin+x1,topMargin+y2); else if (x==mazePx && y == mazePy-1) allowed.push(tile);
+			  }
+			}
+
+            ctx.fillStyle = "yellow";
+			ctx.beginPath();
+			ctx.arc(leftMargin+mazePx*d+d/2, topMargin+mazePy*d+d/2, d/3, 0, 2 * Math.PI);
+			ctx.fillStyle = 'red';
+			ctx.fill();		
+			
+            ctx.strokeStyle = 'red';
+			ctx.lineWidth = 2;
+            drawLine(ctx, leftMargin+(mazeSize-1)*d+3, topMargin+(mazeSize-1)*d+3, leftMargin+(mazeSize-1)*d+d-4, topMargin+(mazeSize-1)*d+d-4);	
+            drawLine(ctx, leftMargin+(mazeSize-1)*d+d-4, topMargin+(mazeSize-1)*d+3, leftMargin+(mazeSize-1)*d+3, topMargin+(mazeSize-1)*d+d-4);
+            ctx.lineWidth = 1; 	
+
+            setColor("lightgreen")
+            moveTo(1,0);
+            printText("Maze v1.1");	
+			moveTo(1,1);
+            printText("[X\u2190\u2191\u2192\u2193ASWD]");		
+
+			for(var i=0; i<mazeScore.length; i++) {
+				moveTo(3+i < 29 ? 1 : 62, (3+i) < 29 ? (3+i) : (1+i-26));
+				printText("L"+(i+1)+":"+mazeScore[i]);		
+			}
+
+		    moveTo(62, 27);
+            printText("Level:"+mazeLevel);
+			moveTo(62, 28);
+            printText("Steps:"+mazeSteps);
+			
+		  }
+		  
+	  function mazeAnimatePlayer(t){  
+		if (mazeAnimationStarted == 0)
+		  mazeAnimationStarted = t;
+		var topMargin = 8;
+		var leftMargin = (w-h)/2 - 2*topMargin;
+		var d = (h-2*8)/mazeSize;
+        ctx.beginPath();
+        ctx.arc(leftMargin+mazePx*d+d/2 + mazeProgress * d * (mazeNx - mazePx), topMargin+mazePy*d+d/2 + mazeProgress * d *(mazeNy - mazePy), d/2.5, 0, 2 * Math.PI);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+
+		for(var a=0; a<allowed.length; a++) {
+		  var tile = allowed[a];
+		  ctx.beginPath();
+		  ctx.rect(tile.x, tile.y, tile.w, tile.h);
+		  ctx.fillStyle = "black"; 
+		  ctx.fill();
+		}		
+		
+        mazeProgress = (t - mazeAnimationStarted) / 200.0;	
+        ctx.beginPath();
+        ctx.arc(leftMargin+mazePx*d+d/2 + mazeProgress * d * (mazeNx - mazePx), topMargin+mazePy*d+d/2 + mazeProgress * d * (mazeNy - mazePy), d/3, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(250,0,0,1)';
+        ctx.fill();		
+
+		ctx.strokeStyle = 'red';
+		ctx.lineWidth = 2;
+		drawLine(ctx, leftMargin+(mazeSize-1)*d+3, topMargin+(mazeSize-1)*d+3, leftMargin+(mazeSize-1)*d+d-4, topMargin+(mazeSize-1)*d+d-4);	
+		drawLine(ctx, leftMargin+(mazeSize-1)*d+d-4, topMargin+(mazeSize-1)*d+3, leftMargin+(mazeSize-1)*d+3, topMargin+(mazeSize-1)*d+d-4);
+		ctx.lineWidth = 1; 	
+		
+		if (mazeProgress<=1)
+		  window.requestAnimationFrame(mazeAnimatePlayer)
+		else
+		  mazeFinishAnimation();
+	  }
+	  
+	  function mazeStartAnimation(newx,newy, callback) {
+	    mazeNx = newx;
+		mazeNy = newy;
+		mazeAnimationStarted = 0;
+		mazeProgress = 0;
+		mazeAnimationCallback = callback;
+		window.requestAnimationFrame(mazeAnimatePlayer);
+	  }
+	  
+	  function mazeFinishAnimation() {
+	    mazePx = mazeNx;
+		mazePy = mazeNy;
+		mazeProgress = 0;
+		mazeSteps++;
+		if (mazePx == mazeSize-1 && mazePy == mazeSize-1){
+		    mazeScore.push(mazeSteps);
+		    runMaze(mazeLevel+1);
+		} else {
+		    mazeAnimationCallback();
+		}
+	  }
+		
+		function runMaze(level) {
+          moveTo(0,0);
+	      stopCoursor();
+	      coursorVisible(false);	
+          mazeLevel = level;		  
+		  mazeSize = 5+level*2;
+		  mazePx = 0;
+		  mazePy = 0;
+		  maze = createMaze(mazeSize, mazeSize);	
+		  drawMaze();
+		  mazeSteps = 0;
+		  mazeMode = true;
+		  if (mazeLevel == 51) {
+			var cx = (w/charWidth) / 2;
+			var cy = (h/charHeight) / 2;
+			ctx.fillStyle = "black";	
+			ctx.fillRect((cx-15)*charWidth, (cy-3)*charHeight, 30*charWidth-2, 6*charHeight+4); 			
+			moveTo(cx-11,cy-2);
+			setColor("greenyellow");
+			printText("!!! CONGRATULATIONS !!!")
+			moveTo(cx-4,cy-1);
+			printText("You Won!");
+			moveTo(cx-9,cy);
+			printText("Sum of steps: "+(mazeScore.reduce((partialSum, a) => partialSum + a, 0)));
+			moveTo(cx-11,cy+2);
+			printText("[P]lay again or E[x]it");
+			ctx.fillStyle = "deeppink";		
+			ctx.fillRect((cx-15)*charWidth, (cy-3)*charHeight, 30*charWidth-2, 8);  			
+			ctx.fillRect((cx-15)*charWidth, (cy+3)*charHeight+4, 30*charWidth-2, 8); 
+            ctx.fillRect((cx-15)*charWidth, (cy-3)*charHeight, 8, 6*charHeight+4); 
+            ctx.fillRect((cx+15)*charWidth, (cy-3)*charHeight, 8, 6*charHeight+4); 		  
+		  }
+		}
+
 		function runPrompt() {
 		   coursorVisible(true);
 		   var path = [];
@@ -874,7 +1136,11 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			       runQuiz();
 				   return;
 			   } else if ((cmd == "SNAKE.EXE" || cmd == "SNAKE" || cmd == "./SNAKE" || cmd == "./SNAKE.EXE") && curDir.name=="SNAKE") {
-			       runQuiz();
+			       runSnake();
+				   return;
+			   } else if ((cmd == "MAZE.EXE" || cmd == "MAZE" || cmd == "./MAZE" || cmd == "./MAZE.EXE") && curDir.name=="MAZE") {
+			       mazeScore = [];
+                   runMaze(1);	
 				   return;
 			   } else if (command.length==0) {
 			     //nothing
@@ -914,7 +1180,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			setColor("lightgreen");
 			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
 			printText("Build modified by PanJanek123 ;)");newLine();newLine(); 
-			runPrompt();				
+			runPrompt();		
     	}
 		
         begin();
