@@ -116,11 +116,19 @@ const folders =
 		    {name: "POMYSLY.TXT", access: true, dir:false, data: "\n1. Nocny kesz ze światełkiem trytowym?\n2. Kesz o retro computing, np. Atari. Emulator Atari online?\n3. Mała stara konsolka w keszu ze smodyfikowaną grą która pokaże współrzędne (data frog?)\n" },
 		  ]
 		},
+		{name: "DEMOS", access: true, dir:true, content: 
+		  [
+		      {name: "SCNDREAL.EXE", access:true, dir:false, url: "https://www.youtube.com/watch?v=L33eQfT72yo"},
+			  {name: "LOGUST5.EXE", access:true, dir:false, url: "https://www.youtube.com/watch?v=oA3ISi7Phnc"},
+			  {name: "MUSIC.EXE", access:true, dir:false, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
+		  ]
+		},
 		{name: "GRY", access: true, dir:true, content: 
 		  [
 			{name: "GEOCACHE", access: true, dir:true, content: 
 			  [
 			    {name: "LOG.TXT", access: true, dir:false, data: "\nFTF:\nSTF:\nTTF:\n" },
+				{name: "ASCIIART.TXT", access: true, dir: false, data: "\n\n@@BG@@@@@#G#@@@@B&@@@@?    !@@@@@@@@@@@@@@@@@@@@@@\n@@#~7#@@G...B@#?7@@@@@?    !@@@@@@@@@@@@@@@@@@@@@@\n@@#P7!YGGYPYG?.?@@@@@@?    :?J5G#@@@@@@@@@@@@@@@@@\n@&PPPJ7..~7!.~B@@@@@@@?         .^75#@@@@@@@@@@@@@\n@@@PY#@Y     ?G&@@@@@@?    ^Y?!:    Y@@@@@@@@@@@@@\n@@@@@@#^  !J!. .7G@@@@?    !@@@@BY7G@@@@@@@@@@@@@@\n@@@@@&^  !@@@&P:  ~G@@?    !@@@@@@@@@@@@&PB@@@@@@@\n@@@@@J  .#@@@@@&?^::5@?    !@@@@@@@@@@#7: .G@@@@@@\n@@@@@:  ^@@@@@@@@@@&#@?    !@@@@@@@@@@@?   .B@@@@@\n@@@@&.  ^@@@@@@@@@@@@@?    !@@@@@@@@@@@@7   ~@@@@@\nBBBBP.  :BBBBBBBBBBBBB7    ~BGGGGGGGGGGB5    5BGGG\n                                                  \n                                                  \nPPPPG!   ^GPPPPPPPPPPG7    ~GPPPPPPPPPPPPPPPPPPPPP\n@@@@@G   .#@@@@@@@@@@@J    !@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@7   ^#@@@@@@@@@@J    !@@@@#!~~~~~~~~~^~?G@@@\n@@@@@@&~  .J@@@@@@@@@@J    !@@@@@^        :?G@@@@@\n@@@@@@@&J5&@@@@@@@@@@@J    !@@@@@J     ^?G@@@@@@@@\n@@@@@@@@@@@@@@@P5#@@@@J    !@@@@@B  :?G@@@@@@@@@@@\n@@@@@@@@@@@@@&7  .^7YP7    !@@@@@@^7@@@@@@@@@@@@@@\n@@@@@@@@@@@@@&Y!:          !@@@@@@J^@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@&B5J7~:    !@@@@@@B.B@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@J    !@@@@@@@^J@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@J    !@@@@@@@GG@@@@@@@@@@@@@\n\n" },
 				{name: "QUIZ", access: true, dir:true, content:
 				  [
 					{name: "QUIZ.DAT", access: true, dir:false },
@@ -138,6 +146,7 @@ const folders =
 		  {name: "AUTOEXEC.BAT", access: true, dir:false, data:"SET TRM=C:\\WIN311\\TEMP\nSET TEMP=C:\\WIN311\\TEMP\nSET BLASTER=A220 I5 D1 T1" },
 		  {name: "CONFIG.SYS", access: true, dir:false, data:"NUMLOCK = OFF\nDOS=HIGH,UMB\nFILES=30\nBUFFERS=20"},
 		  {name: "COMMAND.COM", access: false, dir:false},
+		  {name: "README.TXT", access: true, dir:false, data: "Supported commands: DIR, CD, TYPE. Enter name of EXE file to run program.\nObsługiwane komendy: DIR, CD, TYPE. Wpisz nazwę pliku EXE żeby uruchomić dany program.\n"},
 		  {name: "WIN311", access: false, dir:true},
     ]
 };
@@ -170,6 +179,14 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var readCallback;
 		var readString = "";
 		var easterEggTimeout;	
+		var snake = [];
+		var snakeInterval;
+		var snakeMode = false;
+		var snakeDir = [];
+		var snakeApple = [];
+		var snakeScore = 0;
+		var snakeDelay = 200;
+		var snakeGameOver = false;
 		
 		const keySalt = '8bf32485128d4706bad955467948d7b0';
 		const expectedMD5 = '8EED2A4EF08D8FCD690D6E8E4D14675D';
@@ -313,10 +330,49 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				  newLine();
 				  runPrompt();
 				}, 200);
-		    }
+		    } else if (snakeMode) {
+			  if (snakeGameOver) {
+			      if ((key=="Escape" || key == "d" || key == "D") || key == "q" || key == "Q" || key == "x" || key=="X") {
+                    snakeExit();
+			      } else if (key=="p" || key == "P") {
+                    runSnake();
+			      }
+			  } else {
+				  if ((key=="ArrowRight" || key == "d" || key == "D") && !(snakeDir[0] == -1 && snakeDir[1] == 0)) {
+					changeSnakeDir([1,0]); 
+				  } else if ((key=="ArrowLeft" || key == "a" || key == "A") && !(snakeDir[0] == 1 && snakeDir[1] == 0)) {
+					changeSnakeDir([-1,0]);
+				  } else if ((key=="ArrowUp" || key == "w" || key == "W") && !(snakeDir[0] == 0 && snakeDir[1] == 1)) {
+					changeSnakeDir([0,-1]);
+				  } else if ((key=="ArrowDown" || key == "s" || key == "S") && !(snakeDir[0] == 0 && snakeDir[1] == -1)) {
+					changeSnakeDir([0,1]);
+				  } else if ((key=="Escape" || key == "d" || key == "D") || key == "q" || key == "Q" || key == "x" || key=="X") {
+					snakeExit();
+				  }
+			  }
+			}
+		}
+		
+		function snakeExit() {
+		    clearInterval(snakeInterval);
+			ctx.fillStyle = "black";
+			ctx.fillRect(0, 0, w, h);	
+            moveTo(0,0);
+            coursorVisible(true);
+            runPrompt();			
+		}
+		
+		function changeSnakeDir(newDir) {
+			snakeDir = newDir; 
+			clearInterval(snakeInterval);
+			snakeStep();
+			snakeInterval = setInterval(snakeStep, snakeDelay);		
 		}
 		
 		document.onkeydown = function(evt) {
+		    if (snakeMode) {
+		      evt.preventDefault();
+			}
 		    if (evt.target.id != "mobile") {
 			    handleKey(evt.key);
 			}
@@ -601,6 +657,100 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 	        });		
 		}
 		
+		function drawSnake() {
+			ctx.fillStyle = "black";
+			ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = "green";		
+			ctx.fillRect(0, 0, w, 8);     	
+			ctx.fillRect(0, 0, 8, h-charHeight);
+			ctx.fillRect(w-8, 0, w, h-charHeight);					
+			ctx.fillRect(0, h-charHeight-8, w, 8);	
+			ctx.fillStyle = "red";	
+			ctx.fillRect(snakeApple[0]*8, snakeApple[1]*8, 8, 8);				
+            for(var i=0; i<snake.length; i++) {
+			  ctx.fillStyle = i==0 ? "yellow" : "lightgreen";	
+			  ctx.fillRect(snake[i][0]*8, snake[i][1]*8, 8, 8);	
+            }
+
+            setColor("yellow");
+            moveTo(0,h/charHeight - 1);
+            printText("Score: "+snakeScore);
+            setColor("lightgreen");			
+            moveTo((w/charWidth)-35, h/charHeight - 1);
+            printText("controls: [\u2190\u2191\u2192\u2193] or [ASWD], E[x]it");				
+		}
+		
+		function snakeShowGameOver() {
+		    clearInterval(snakeInterval);
+			snakeGameOver = true;
+			var cx = (w/charWidth) / 2;
+			var cy = (h/charHeight) / 2;
+			moveTo(cx-7,cy-1);
+			setColor("red");
+			printText("   GAME OVER   ")
+			moveTo(cx-7,cy);
+			setColor("yellow");
+			printText("   Score: "+snakeScore);
+			moveTo(cx-11,cy+1);
+			printText("[P]lay again or E[x]it");
+			ctx.fillStyle = "red";		
+			ctx.fillRect((cx-13)*charWidth, (cy-2)*charHeight, 27*charWidth-2, 8);  			
+			ctx.fillRect((cx-13)*charWidth, (cy+2)*charHeight+4, 27*charWidth-2, 8); 
+            ctx.fillRect((cx-13)*charWidth, (cy-2)*charHeight, 8, 4*charHeight+4); 
+            ctx.fillRect((cx+13)*charWidth, (cy-2)*charHeight, 8, 4*charHeight+4); 			
+		}
+		
+		function snakeStep() {
+			drawSnake();
+			for(var i = 1; i<snake.length; i++) {
+			  if (snake[i][0] == snake[0][0] && snake[i][1] == snake[0][1]) {
+			    snakeShowGameOver();
+			  }
+			}			
+			
+		    if (snake[0][0] == snakeApple[0] && snake[0][1] == snakeApple[1]) {
+			  snake.push([[snake[0][0],snake[0][1]]]);
+			  snakeScore++;
+			  snakeDelay -= 5;
+			  if (snakeDelay < 20) {
+			      snakeDelay = 20;
+			  }
+			  var taken = false;
+			  do {
+			    snakeApple = [Math.floor(Math.random()*(w/8 - 4))+2, Math.floor(Math.random()*(h/8 - 4))+2];
+				for(var i = 0; i<snake.length; i++) {
+                  if (snakeApple[0] == snake[i][0] && snakeApple[1] == snake[i][1]) {
+				    taken=true;
+				  }
+				}
+			  } while (taken);
+			}
+			
+			for(var i = snake.length-1; i>0; i--) {
+			  snake[i][1] = snake[i-1][1];
+              snake[i][0] = snake[i-1][0];
+			}
+			
+			snake[0][0] += snakeDir[0];
+			snake[0][1] += snakeDir[1];
+			if (snake[0][0] <= 0 || snake[0][0] >= w/8 || snake[0][1] <=0 || snake[0][1] >= h/8-2) {
+			  snakeShowGameOver();
+			}	
+		}
+		
+		function runSnake() {
+		    snakeGameOver = false;
+            moveTo(0,0);
+			stopCoursor();
+			coursorVisible(false);
+			snakeMode = true;
+			snakeScore = 0;
+			snake = [[14,10],[13,10],[12,10],[11,10],[10,10]];
+			snakeApple = [20,10];
+			snakeDir = [1,0];
+			snakeInterval = setInterval(snakeStep, snakeDelay);
+		}
+		
 		function runPrompt() {
 		   coursorVisible(true);
 		   var path = [];
@@ -651,7 +801,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			   } else if (cmd==":)") {
 			       startEesterEgg();
 				   return;
-			   } else if (cmd == "TYPE" || cmd == "MORE") {
+			   } else if (cmd == "TYPE" || cmd == "MORE" || cmd=="CAT") {
 			     if (lines.length == 1) {
 				   printText("Missing argument to TYPE.");newLine(); 
 				 } else {
@@ -720,11 +870,29 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				 printText((curDir.content.length-dirCount)+" File(s), "+dirCount+" Directories");
 				 newLine();
 				 newLine();
-			   } else if ((cmd == "QUIZ.EXE" || cmd == "QUIZ") && curDir.name=="QUIZ") {
+			   } else if ((cmd == "QUIZ.EXE" || cmd == "QUIZ" || cmd == "./QUIZ" || cmd == "./QUIZ.EXE") && curDir.name=="QUIZ") {
+			       runQuiz();
+				   return;
+			   } else if ((cmd == "SNAKE.EXE" || cmd == "SNAKE" || cmd == "./SNAKE" || cmd == "./SNAKE.EXE") && curDir.name=="SNAKE") {
 			       runQuiz();
 				   return;
 			   } else if (command.length==0) {
 			     //nothing
+			   } else if (curDir.name=="DEMOS") {
+			       var file = null;
+				   for(var i=0; i<curDir.content.length; i++) {
+				     var file = null;
+					 if (curDir.content[i].name.toUpperCase() == cmd.toUpperCase() || curDir.content[i].name.toUpperCase() == "./"+cmd.toUpperCase()) {
+					   file = curDir.content[i];
+					 }
+					 if (file==null) {
+					   printText("I don't know how to "+cmd.toLowerCase()+".");newLine(); 
+					 } else {
+					   printText("Opening external program... (allow popup windows / zezwól na wyskakujące okienka)\n\n");
+					   setTimeout(_=>{window.open(file.url, '_blank').focus(); runPrompt();}, 1500);
+					   return;
+					 }
+				   }
 			   } else {
 			     printText("I don't know how to "+cmd.toLowerCase()+".");newLine(); 
 			   }
@@ -746,7 +914,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			setColor("lightgreen");
 			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
 			printText("Build modified by PanJanek123 ;)");newLine();newLine(); 
-			runPrompt();			
+			runPrompt();				
     	}
 		
         begin();
