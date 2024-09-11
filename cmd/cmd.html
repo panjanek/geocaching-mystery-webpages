@@ -55,19 +55,19 @@ const questions = [
   }, 
   {
 	  "pl" : "Według pewnej powieści komediowo-SF: Jak brzmi ostateczna odpowiedź na pytanie o Życie, Wszechświat i Całą Resztę?",
-	  "en" : "According to some comedy-SF novel: What is the answet to the final question about Live, The Universe and Everything?"
+	  "en" : "According to some comedy-SF novel: What is the answer to the final question about Live, The Universe and Everything?"
   },    
   {
-	  "pl" : "Biegniesz z prędkością 10km/h trasę o długości 10km: 5km tam i 5km spowrotem. Równo z Tobą startuje szybki biegacz który biegnie 2x szybciej i powolny który biegnie 2x wolniej. Po drodze mija Ciebie szybki biegacz, a potem Ty mijasz powolnego. Ile minut mija pomiędzy tymi spotkaniami?",
-	  "en" : "You run 10km route: 5km there and 5km back. With you start a fast runner that runs 2x your speed and a slow runner that runs half your speed. During the run the fast runner pass you by and then you pass by the slow runner. How many minutes passes between this meeting?"
+	  "pl" : "Biegniesz z prędkością 10km/h trasę o długości 10km: 5km tam i 5km spowrotem. Równo z Tobą startuje szybki biegacz który biegnie 2x szybciej i powolny który biegnie 2x wolniej. Po drodze mija Ciebie biegnący naprzeciw szybki biegacz, a potem, po nawrocie na 5km, Ty mijasz powolnego (biegnącego naprzeciw). Ile minut mija pomiędzy tymi spotkaniami?",
+	  "en" : "You run 10km route: 5km there and 5km back. Together with you starts: a fast runner that runs 2x your speed and a slow runner that runs half your speed. During the run the fast runner pass you by and then you pass by the slow runner. How many minutes passes between this meeting?"
   },
   {
-	  "pl" : "Kwadrat jest ograniczony czterema odcinkami. Szcześcian jest ograniczony 6cioma ścianami. Iloma figurami jest ograniczona 10-wymiarowa hiperkostka?",
-	  "en" : "Square is constrained by four lines. Cube is constrained by 6 faces. How many shapes constrain 10-dimensional hypercube?"
+	  "pl" : "Kwadrat jest ograniczony czterema odcinkami. Szcześcian jest ograniczony 6cioma ścianami. Iloma figurami (9-wymiarowymi) jest ograniczona 10-wymiarowa hiperkostka?",
+	  "en" : "Square is constrained by four lines. Cube is constrained by 6 faces. How many shapes (9d) constrain 10-dimensional hypercube?"
   },
   {
-	  "pl" : "Samolot leci wzdłuż 45 równoleżnika. Jaką musi mieć prędkość (w km/h) aby pozostawała na nim ta sama godzina? (promień ziemi = 6371km, ignorujemy wysokość lotu, zakładamy, że Ziemia jest idealną kulą, odpowiedź należy zaokrąglić do najbliższej liczby całkowitej)",
-	  "en" : "A plane flies along 45th circle of lattitude. What is the speed of the plane (in km/h) if the local time onboard stays the same? (Earth radius = 6371km, ignore plane altitude, assume Earth is a perfect sphere, round aswer to nearest whole number)"
+	  "pl" : "Obserwujesz przez teleskop swojego brata bliźniaka w statku kosmicznym oddalającego się od Ciebie z 99% prędkości światła. Widzisz u niego znacznie wolniej chodzący zegar. Czekasz aż u niego minie godzina. Ile w tym czasie czasu minie u Ciebie? Podaj liczbę sekund zaokrągloną do najbliższej liczby całkowitej.",
+	  "en" : "You observe, with a telescope, your twin brother in a spaceship moving away at 99% speed of light. You see his clock ticking much slower. You wait for an hour to pass on his clock. How much time passes for you till then? Answer with seconds rounded to closest integer."
   },
   {
 	  "pl" : "Ile liczb pierwszych znajduje się pomiędzy liczbami będącymi odpowiedziami na pytania 4te i 9te?",
@@ -216,8 +216,8 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var mazeLevel = 0;
 		
 		const keySalt = '8bf32485128d4706bad955467948d7b0';
-		const expectedMD5 = '8EED2A4EF08D8FCD690D6E8E4D14675D';
-		const encryptedSolution = 'F1DCA4E59012267E33BC01922A63FAE82A9E8500E27EB244EC7A7126A65E212C596DE803041EF1BE1E5470DEB0';
+		const expectedMD5 = 'BF5B41FC8D17EB704799DF457F60F037';
+		const encryptedSolution = '2B133D3B2F60F5461466F8FD219F6E0D06E9C04535493ABC9FC2A0584F30F7E5F90B5E8E7BF99F5427C1B910BE';
 		const easterEggPwd = ":)";
 		
 		const b64binb = base64String => Uint8Array.from(atob(base64String), c => c.charCodeAt(0));
@@ -650,7 +650,10 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					newLine();
 					newLine();
 					question(language == "en" ? "Hit enter to restart\n" : "Naciśnij enter aby spróbować jeszcze raz", _=>{
-						restart();
+						answers="";
+						questionNr = 0;
+						invalid = 0;
+						askNextQuestion();
 					});
 				});
 			}
@@ -694,6 +697,9 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		}		
 		
 	    function runQuiz() {
+		    answers="";
+			questionNr = 0;
+			invalid = 0;
 	        question("Select language / Wybierz język: pl=Polski (domyślny), en=English: ", function(lang) {
 				if (lang == easterEggPwd) {
 					startEesterEgg();
