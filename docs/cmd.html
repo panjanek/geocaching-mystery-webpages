@@ -740,7 +740,9 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		}
 		
 		function diagonalScroll(t, color, lx, ly, len1, len2) {
-		    var code = document.getElementsByTagName('script')[0].innerHTML;
+		    var codes = document.getElementsByTagName('script');
+			var code = "";
+			for(var i=0; i<codes.length; i++) { code+=codes[i].innerHTML;}
 			var lines = code.split('\n');
             var ratio = charHeight / charWidth;
 			for(var l=0; l<=len2; l++) {
@@ -1285,7 +1287,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			setColor("lightgreen");
 			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
 			printText("Build modified by PanJanek123 ;)");newLine();newLine(); 
-			runPrompt();			
+			runPrompt();				
     	}
 		
         begin();
