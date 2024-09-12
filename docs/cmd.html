@@ -197,6 +197,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var snakeInterval;
 		var snakeMode = false;
 		var snakeDir = [];
+		var snakeLastT = 0;
 		var snakeApple = [];
 		var snakeScore = 0;
 		var snakeStartDelay = 160;
@@ -778,6 +779,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				drawScrollHoriz(t*0.8, scrollText1, "lime", snakeObstacles[0][0]*d+16, snakeObstacles[0][1]*d+16, (snakeObstacles[0][2]*d)/charWidth-2);
 				drawScrollHoriz(t*0.6, scrollText2, "lime", snakeObstacles[1][0]*d+16, snakeObstacles[1][1]*d+16, (snakeObstacles[1][2]*d)/charWidth-2);
 				diagonalScroll(t*1.5, "lime", snakeObstacles[2][0]*d+16, snakeObstacles[2][1]*d+16, (snakeObstacles[2][2]*d)/charWidth-2, (snakeObstacles[2][3]*d)/charHeight-2);
+				snakeLastT = t;
 			}
 
 			for(var i=0; i<snakeObstacles.length; i++) {
@@ -805,11 +807,12 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			ctx.arc(snakeApple[0]*d+d/2, snakeApple[1]*d+d/2, d/2, 0, 2 * Math.PI);
 			ctx.fillStyle = 'lime';
 			ctx.fill();
-            ctx.closePath();						
-            for(var i=0; i<snake.length; i++) {
-			  ctx.fillStyle = i==0 ? "yellow" : "lightgreen";	
+            ctx.closePath();					
+			for(var i=0; i<snake.length; i++) {
+			  ctx.fillStyle = snakeGameOver ? "red" : (i==0 ? "yellow" : "lightgreen");	
 			  ctx.fillRect(snake[i][0]*d, snake[i][1]*d, d, d);	
-            }
+			}
+
 			
             setColor("yellow");
             moveTo(0,h/charHeight - 1);
@@ -829,7 +832,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		function snakeShowGameOver() {
 		    snakeGameOver = true;
 		    clearInterval(snakeInterval);
-			
+			drawSnake(snakeLastT, true);
 			var cx = (w/charWidth) / 2;
 			var cy = (h/charHeight) / 2;
 			moveTo(cx-7,cy-1);
