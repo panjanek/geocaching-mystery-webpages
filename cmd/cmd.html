@@ -177,12 +177,13 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var curY = 0;
 		var curColor = "white";
 		var cursorVisible = true;		
+		var defaultFont = "16px Courier New";
 	    const canvas = document.getElementById("c");
 		const mobileInput = document.getElementById("mobile");
 	    const ctx = canvas.getContext("2d");
 		ctx.textBaseline = "top";
 		ctx.textAlign = "left";
-		ctx.font = "16px Courier New";
+		ctx.font = defaultFont;
 		const charWidth = 10;
 		const charHeight = 16;
 		var w = canvas.width;
@@ -198,8 +199,11 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var snakeDir = [];
 		var snakeApple = [];
 		var snakeScore = 0;
-		var snakeDelay = 200;
+		var snakeStartDelay = 160;
 		var snakeGameOver = false;
+		var snakeObstacles = [[7,10,40,6], [48,40,40,6], [71, 11, 18, 18]];
+		var scrollText1 = "            ***            Witaj w grze Snake [by PanJanek123 (c)2024]. Ta gra jest tylko dodatkiem do mystery kesza 'Czarne Okienko'. Aby rozwiązać zagadkę musisz odnaleźć program QUIZ.EXE, uruchomić go i odpowiedzieć na pytania. Gra SNAKE to tylko bonus. Na marginesie: Nie jeśli jesteś hackerem i sprawdziłeś, że ta aplikacja WEBowa nie ma żadnego backendu to wiesz, że rozwiązanie - współrzędne finału - muszą znajdować się w kodzie javascript. To by oznaczało, że może mółbyś je tam odszukać... Jednak nie jest to takie proste! Współrzędne są zaszyfrowane, a kluczem są odpowiedzi na pytania quizu. Więc, oczywiście, możesz próbować robić brute-force, jednak żeby to się udało musisz znać odpowiedzi przynajmniej na część pytań. Plus kod jest obfuskowany i zminifikowany. Chyba serio łatwiej będzie po prostu odpowiedzieć na pytania... Powodzenia!";
+		var scrollText2 = "            ***            Welcome to the game of Snake [by PanJanek123 (c)2024]. This is only an addition to mystery cache 'Czarne Okienko' (Black window in polish). To solve the mystery you have to find QUIZ.EXE program, run it and answer the questions. Game of SNAKE is only a bonus. If you are a hacker and you've checked that this web app does not use any backend then you know that the solution - final coords - has to be somwhere in javascript code. This would suggest that you could find then there... But it won't be so easy! Coordinates are encrypted and the key consist of answers to the quiz. So, sure, you can try to brute-force the encryption, but to succeed you have to know the answers for at least some questions. Plus: The code is obfuscated and minified. I think it will be easier just to answer the questions. Good luck!";
 	    var mazeSize = 10;
 	    var maze;
 	    var mazePx = 0;
@@ -725,21 +729,86 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 	        });		
 		}
 		
-		function drawSnake() {
+		function drawScrollHoriz(t, text, color, lx, ly, len) {
+			var scrollOffset = Math.floor(t/100) % text.length;
+			var pixelOffset = Math.floor((t % 100)/charWidth);
+			var part = (text + text).substring(scrollOffset, scrollOffset+len);
+			ctx.fillStyle = color;
+			for(var i=0; i<part.length; i++) {
+				ctx.fillText(part[i], lx+i*charWidth-pixelOffset, ly);
+			}		
+		}
+		
+		function diagonalScroll(t, color, lx, ly, len1, len2) {
+		    var code = document.getElementsByTagName('script')[0].innerHTML;
+			var lines = code.split('\n');
+            var ratio = charHeight / charWidth;
+			for(var l=0; l<=len2; l++) {
+				var lineOffset = Math.floor(t/100) % lines.length;
+				var pixelOffsetY = (Math.floor((t % 100)/charWidth))*ratio;
+				var line = lines[(lineOffset+l)%lines.length];
+				if (line.length == 0) {
+				    line = "// ";
+				}
+				line = line.repeat(lines.length / line.length);
+				var letterOffset = Math.floor(t/100) % line.length;
+				var pixelOffsetX = Math.floor((t % 100)/charWidth);
+				var part = (line+line).substring(letterOffset, letterOffset+len1);
+				ctx.fillStyle = color;
+				for(var i=0; i<part.length; i++) {
+					ctx.fillText(part[i], lx+i*charWidth-pixelOffsetX, ly+l*charHeight-pixelOffsetY);
+				}			
+			}
+		}		
+		
+		function drawSnake(t) {
 			ctx.fillStyle = "black";
 			ctx.fillRect(0, 0, w, h);
+			var d = 8;
+			
+			for(var i=0; i<snakeObstacles.length; i++) {
+			  var o = snakeObstacles[i];	
+			  ctx.fillStyle = "black";
+			  ctx.fillRect(o[0]*d+d, o[1]*d+d, o[2]*d-2*d, o[3]*d-2*d);						  
+			}
+
+			if (t) {
+				drawScrollHoriz(t*0.8, scrollText1, "lime", snakeObstacles[0][0]*d+16, snakeObstacles[0][1]*d+16, (snakeObstacles[0][2]*d)/charWidth-2);
+				drawScrollHoriz(t*0.6, scrollText2, "lime", snakeObstacles[1][0]*d+16, snakeObstacles[1][1]*d+16, (snakeObstacles[1][2]*d)/charWidth-2);
+				diagonalScroll(t*1.5, "lime", snakeObstacles[2][0]*d+16, snakeObstacles[2][1]*d+16, (snakeObstacles[2][2]*d)/charWidth-2, (snakeObstacles[2][3]*d)/charHeight-2);
+			}
+
+			for(var i=0; i<snakeObstacles.length; i++) {
+			  var o = snakeObstacles[i];
+			  ctx.fillStyle = "green";
+			  ctx.fillRect(o[0]*d, o[1]*d, o[2]*d, d);	
+              ctx.fillRect(o[0]*d, o[1]*d, d, o[3]*d);	
+              ctx.fillRect(o[0]*d, (o[1]+o[3]-1)*d, o[2]*d, d);	
+              ctx.fillRect((o[0]+o[2]-1)*d, o[1]*d, d, o[3]*d);				  
+			  ctx.fillStyle = "darkgreen";
+			  ctx.fillRect((o[0]+1)*d, (o[1]+1)*d, (o[2]-2)*d, d);	
+              ctx.fillRect((o[0]+1)*d, (o[1]+1)*d, d, (o[3]-2)*d);	
+              ctx.fillRect((o[0]+1)*d, (o[1]+o[3]-2)*d, (o[2]-2)*d, d);	
+              ctx.fillRect((o[0]+o[2]-2)*d, (o[1]+1)*d, d, (o[3]-2)*d);						  
+				  
+			}			
+			
 			ctx.fillStyle = "green";		
-			ctx.fillRect(0, 0, w, 8);     	
-			ctx.fillRect(0, 0, 8, h-charHeight);
-			ctx.fillRect(w-8, 0, w, h-charHeight);					
-			ctx.fillRect(0, h-charHeight-8, w, 8);	
-			ctx.fillStyle = "red";	
-			ctx.fillRect(snakeApple[0]*8, snakeApple[1]*8, 8, 8);				
+			ctx.fillRect(0, 0, w, d);     	
+			ctx.fillRect(0, 0, d, h-charHeight);
+			ctx.fillRect(w-d, 0, w, h-charHeight);					
+			ctx.fillRect(0, h-charHeight-d, w, d);	
+			
+			ctx.beginPath();
+			ctx.arc(snakeApple[0]*d+d/2, snakeApple[1]*d+d/2, d/2, 0, 2 * Math.PI);
+			ctx.fillStyle = 'lime';
+			ctx.fill();
+            ctx.closePath();						
             for(var i=0; i<snake.length; i++) {
 			  ctx.fillStyle = i==0 ? "yellow" : "lightgreen";	
-			  ctx.fillRect(snake[i][0]*8, snake[i][1]*8, 8, 8);	
+			  ctx.fillRect(snake[i][0]*d, snake[i][1]*d, d, d);	
             }
-
+			
             setColor("yellow");
             moveTo(0,h/charHeight - 1);
             printText("Score: "+snakeScore);
@@ -748,9 +817,17 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
             printText("controls: [\u2190\u2191\u2192\u2193] or [ASWD], E[x]it");				
 		}
 		
+		function snakeAnimation(t) {
+		    if (snakeMode && !snakeGameOver) {
+			    drawSnake(t);
+		        window.requestAnimationFrame(snakeAnimation)
+			}
+		}
+		
 		function snakeShowGameOver() {
+		    snakeGameOver = true;
 		    clearInterval(snakeInterval);
-			snakeGameOver = true;
+			
 			var cx = (w/charWidth) / 2;
 			var cy = (h/charHeight) / 2;
 			moveTo(cx-7,cy-1);
@@ -777,21 +854,29 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			}			
 			
 		    if (snake[0][0] == snakeApple[0] && snake[0][1] == snakeApple[1]) {
-			  snake.push([[snake[0][0],snake[0][1]]]);
-			  snakeScore++;
-			  snakeDelay -= 5;
-			  if (snakeDelay < 20) {
+			    snake.push([[snake[0][0],snake[0][1]]]);
+			    snakeScore++;
+			    snakeDelay -= 5;
+			    if (snakeDelay < 20) {
 			      snakeDelay = 20;
-			  }
-			  var taken = false;
-			  do {
-			    snakeApple = [Math.floor(Math.random()*(w/8 - 4))+2, Math.floor(Math.random()*(h/8 - 4))+2];
-				for(var i = 0; i<snake.length; i++) {
-                  if (snakeApple[0] == snake[i][0] && snakeApple[1] == snake[i][1]) {
-				    taken=true;
-				  }
-				}
-			  } while (taken);
+			    }
+			    var taken = false;
+			    do {
+			        taken = false;
+			        snakeApple = [Math.floor(Math.random()*(w/8 - 4))+2, Math.floor(Math.random()*(h/8 - 4))+2];
+					for(var i = 0; i<snake.length; i++) {
+					  if (snakeApple[0] == snake[i][0] && snakeApple[1] == snake[i][1]) {
+						taken=true;
+					  }
+					}
+				  
+					for(var i = 0; i<snakeObstacles.length; i++) {
+					  var o = snakeObstacles[i];
+					  if (snakeApple[0] >= (o[0]-1) && snakeApple[0] < (o[0]+o[2]+2) && snakeApple[1] >= (o[1]-1) && snakeApple[1] < (o[1]+o[3]+2)) {
+						taken = true;
+					  }
+					}				  
+				} while (taken);
 			}
 			
 			for(var i = snake.length-1; i>0; i--) {
@@ -801,9 +886,22 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			
 			snake[0][0] += snakeDir[0];
 			snake[0][1] += snakeDir[1];
+			
+			var colision = false;
 			if (snake[0][0] <= 0 || snake[0][0] >= w/8 || snake[0][1] <=0 || snake[0][1] >= h/8-2) {
-			  snakeShowGameOver();
+			  colision = true;
 			}	
+			
+			for(var i = 0; i<snakeObstacles.length; i++) {
+			  var o = snakeObstacles[i];
+			  if (snake[0][0] >= o[0] && snake[0][0] < (o[0]+o[2]) && snake[0][1] >=o[1] && snake[0][1] < (o[1]+o[3])) {
+			    colision = true;
+			  }
+			}
+			
+			if (colision) {
+			  snakeShowGameOver();
+            }
 		}
 		
 		function runSnake() {
@@ -813,10 +911,12 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			coursorVisible(false);
 			snakeMode = true;
 			snakeScore = 0;
-			snake = [[14,10],[13,10],[12,10],[11,10],[10,10]];
-			snakeApple = [20,10];
+			snake = [[14,5],[13,5],[12,5],[11,5],[10,5]];
+			snakeApple = [55,5];
 			snakeDir = [1,0];
+			snakeDelay = snakeStartDelay;
 			snakeInterval = setInterval(snakeStep, snakeDelay);
+			snakeAnimation();
 		}
 		
 		  function splitmix32(a) {
@@ -1185,7 +1285,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			setColor("lightgreen");
 			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
 			printText("Build modified by PanJanek123 ;)");newLine();newLine(); 
-			runPrompt();		
+			runPrompt();			
     	}
 		
         begin();
