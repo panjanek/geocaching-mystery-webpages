@@ -865,7 +865,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			    var taken = false;
 			    do {
 			        taken = false;
-			        snakeApple = [Math.floor(Math.random()*(w/8 - 4))+2, Math.floor(Math.random()*(h/8 - 4))+2];
+			        snakeApple = [Math.floor(Math.random()*(w/8 - 4))+2, Math.floor(Math.random()*(h/8 - 8))+2];
 					for(var i = 0; i<snake.length; i++) {
 					  if (snakeApple[0] == snake[i][0] && snakeApple[1] == snake[i][1]) {
 						taken=true;
