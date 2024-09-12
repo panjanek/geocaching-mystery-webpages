@@ -782,12 +782,12 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 
 			for(var i=0; i<snakeObstacles.length; i++) {
 			  var o = snakeObstacles[i];
-			  ctx.fillStyle = "green";
+			  ctx.fillStyle = "black";
 			  ctx.fillRect(o[0]*d, o[1]*d, o[2]*d, d);	
               ctx.fillRect(o[0]*d, o[1]*d, d, o[3]*d);	
               ctx.fillRect(o[0]*d, (o[1]+o[3]-1)*d, o[2]*d, d);	
               ctx.fillRect((o[0]+o[2]-1)*d, o[1]*d, d, o[3]*d);				  
-			  ctx.fillStyle = "darkgreen";
+			  ctx.fillStyle = "green";
 			  ctx.fillRect((o[0]+1)*d, (o[1]+1)*d, (o[2]-2)*d, d);	
               ctx.fillRect((o[0]+1)*d, (o[1]+1)*d, d, (o[3]-2)*d);	
               ctx.fillRect((o[0]+1)*d, (o[1]+o[3]-2)*d, (o[2]-2)*d, d);	
@@ -896,7 +896,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			
 			for(var i = 0; i<snakeObstacles.length; i++) {
 			  var o = snakeObstacles[i];
-			  if (snake[0][0] >= o[0] && snake[0][0] < (o[0]+o[2]) && snake[0][1] >=o[1] && snake[0][1] < (o[1]+o[3])) {
+			  if (snake[0][0] > o[0] && snake[0][0] < (o[0]+o[2]-1) && snake[0][1] > o[1] && snake[0][1] < (o[1]+o[3]-1)) {
 			    colision = true;
 			  }
 			}
