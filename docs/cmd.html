@@ -879,7 +879,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			  ctx.fillRect(snake[i][0]*d, snake[i][1]*d, d, d);	
 			}
 
-			
             setColor("yellow");
             moveTo(0,h/charHeight - 1);
             printText("Score: "+snakeScore);
@@ -890,7 +889,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 		function snakeAnimation(t) {
 		    if (snakeMode && !snakeGameOver) {
-			    console.log(t);
 			    if (snakeStartT == -1 && t>0) {
 				    snakeStartT = t;
 				}
@@ -965,7 +963,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			snake[0][1] += snakeDir[1];
 			
 			var colision = false;
-			if (snake[0][0] <= 0 || snake[0][0] >= w/8 || snake[0][1] <=0 || snake[0][1] >= h/8-2) {
+			if (snake[0][0] <= 0 || snake[0][0] >= w/8 || snake[0][1] <=0 || snake[0][1] >= h/8-3) {
 			  colision = true;
 			}	
 			
