@@ -443,7 +443,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		}
 		
 		document.onkeydown = function(evt) {
-		    if (snakeMode || mazeMode || (readPrompt && evt.key.length > 1)) {
+		    if (snakeMode || mazeMode || (readPrompt && evt.key.length == "ArrowUp")) {
 		      evt.preventDefault();
 			}
 		    if (evt.target.id != "mobile") {
