@@ -216,6 +216,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var snakeLastT = 0;
 		var snakeApple = [];
 		var snakeScore = 0;
+		var snakeStartT = -1;
 		var snakeStartDelay = 160;
 		var snakeGameOver = false;
 		var snakeObstacles = [[7,10,40,6], [48,40,40,6], [71, 11, 18, 18], [11,31,13,13]];
@@ -889,7 +890,11 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 		function snakeAnimation(t) {
 		    if (snakeMode && !snakeGameOver) {
-			    drawSnake(t);
+			    console.log(t);
+			    if (snakeStartT == -1) {
+				    snakeStartT = (t > 0) ? t : 0;
+				}
+			    drawSnake(1+t-snakeStartT);
 		        window.requestAnimationFrame(snakeAnimation)
 			}
 		}
@@ -976,6 +981,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 		function runSnake() {
 		    snakeGameOver = false;
+			snakeStartT = -1;
             moveTo(0,0);
 			stopCoursor();
 			coursorVisible(false);
