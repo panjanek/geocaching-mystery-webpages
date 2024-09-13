@@ -198,11 +198,13 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		ctx.font = defaultFont;
 		const charWidth = 10;
 		const charHeight = 16;
+		var promptHistory = [];
 		var w = canvas.width;
 		var h = canvas.height;
 		var coursorInterval;
 		var playerAudio = null;
 		var audioInterval = null;
+		var readPrompt = true;
 		var readMode = false;
 		var readCallback;
 		var readString = "";
@@ -360,6 +362,11 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				  printChar(key);
 				}
 				
+				if (key == "ArrowUp" && readPrompt && promptHistory.length > 1 && readString.length == 0) {
+				    readString = promptHistory[promptHistory.length-1];
+					printText(readString);
+				}
+				
 				if (key == "Backspace" && readString.length>0) {
 				  readString = readString.substring(0, readString.length-1);
 				  var nx = curX-1;
@@ -435,7 +442,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		}
 		
 		document.onkeydown = function(evt) {
-		    if (snakeMode || mazeMode) {
+		    if (snakeMode || mazeMode || (readPrompt && evt.key.length > 1)) {
 		      evt.preventDefault();
 			}
 		    if (evt.target.id != "mobile") {
@@ -514,8 +521,13 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 
         function prompt(text, callback) {
 		    setColor("lightgreen");
-			printText(text) ;	
+			printText(text);	
+			readPrompt = true;
 			readText(function(input) {
+			    if (input.length > 0) {
+				    promptHistory.push(input);
+				}
+				readPrompt = false;
 				callback(input);
 			});		
         }			
@@ -1336,13 +1348,15 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 						   audioInterval = setInterval(_=>  {
 						       var progress = Math.floor(playerAudio.currentTime);
 							   var duration = Math.floor(playerAudio.duration);
-							   moveTo(4,ay);
-							   var d = 1+Math.floor((30*progress)/duration);
-							   if (d>30) d=30;
-							   var str = "#".repeat(d)+"-".repeat(30-d);
-							   var c = "|/-\\|/-\\";
-							   var s = Math.floor(playerAudio.currentTime*10)%8;
-							   printText(prettyTime(progress)+" ["+str+"] "+prettyTime(duration)+" ("+c.substring(s,s+1)+")");
+							   if (playerAudio.currentTime>=0 && playerAudio.duration>0) {
+								   moveTo(4,ay);
+								   var d = 1+Math.floor((30*progress)/duration);
+								   if (d>30) d=30;
+								   var str = "#".repeat(d)+"-".repeat(30-d);
+								   var c = "|/-\\|/-\\";
+								   var s = Math.floor(playerAudio.currentTime*10)%8;
+								   printText(prettyTime(progress)+" ["+str+"] "+prettyTime(duration)+" ("+c.substring(s,s+1)+")");
+							   }
 						   },10);
 						   return;
 					   }
