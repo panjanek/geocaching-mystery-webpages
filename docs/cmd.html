@@ -525,15 +525,22 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		mobile.addEventListener('input', function(evt) {
 		  var debug =  document.getElementById("debug"); 
 		  debug.innerHTML += "<p>inputType="+evt.inputType+",data="+evt.data+"</p>";
+		  
 		  if( evt.inputType.toUpperCase() == "insertText".toUpperCase() ){
-			for(var i=0; i<evt.data.length; i++) {
-			  handleKey(evt.data[i]);
+			
+			if (evt.data == " " && mobileBuffer.length > 0) {
+			  mobileBuffer += evt.data
+			} else {
+				for(var i=0; i<evt.data.length; i++) {
+				  handleKey(evt.data[i]);
+				}
+				
+				if (evt.data.length > 1) {
+				  mobileBuffer = "";
+				  handleKey("Enter");
+				}
 			}
 			
-			if (evt.data.length > 1) {
-			  mobileBuffer = "";
-			  handleKey("Enter");
-			}
 		  } else if (evt.inputType.toUpperCase() == "insertCompositionText".toUpperCase()) {
 		    if (evt.data.length >= 1) {
 			  mobileBuffer = evt.data;
@@ -556,6 +563,16 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			  handleKey("Enter");
 			}
         });
+		
+		mobile.addEventListener("lostpointercapture", function(e){
+		  var debug =  document.getElementById("debug"); 
+		  debug.innerHTML += "<p>lostpointercapture</p>";		
+		});
+		
+		mobile.addEventListener("focusout", function(e){
+		  var debug =  document.getElementById("debug"); 
+		  debug.innerHTML += "<p>focusout</p>";		
+		});
 
         function readText(callback) {
 		    setColor("lightgreen");
