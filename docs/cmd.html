@@ -31,6 +31,7 @@
     <div style="width: min-content;margin: auto;font-family: Courier;padding: 10px;">
       <input style="font-size: 32px;" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"/>
 	</div>
+	<div id="debug"><div>
 	<div class="footer">
 	  <div style="width: min-content;margin: auto;font-family: Courier"><strong>Czarne&nbspOkienko</strong>&nbspby&nbspPanJanek123</div>
 	</div>
@@ -521,8 +522,9 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 	
 		
 		mobile.addEventListener('input', function(evt) {
-		  
-		  if( evt.inputType.toUpperCase() == "insertText".toUpperCase() || evt.inputType.toUpperCase() == "insertCompositionText".toUpperCase()){
+		  var debug =  document.getElementById("debug"); 
+		  debug.innerHTML += "<p>inputType="+evt.inputType+",data="+evt.data+"</p>";
+		  if( evt.inputType.toUpperCase() == "insertText".toUpperCase() ){
 			for(var i=0; i<evt.data.length; i++) {
 			  handleKey(evt.data[i]);
 			}
@@ -530,11 +532,18 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			if (evt.data.length > 1) {
 			  handleKey("Enter");
 			}
+		  } else if (evt.inputType.toUpperCase() == "insertCompositionText".toUpperCase()) {
+		    if (evt.data.length > 1) {
+			  handleKey(evt.data[evt.data.length-1]);
+			}
 		  }
 		});
 		
 		mobile.addEventListener('keyup', function(e){
-            if (e.keyCode === 13) { 
+		  var debug =  document.getElementById("debug"); 
+		  debug.innerHTML += "<p>keyup="+e.key+","+e.keyCode+"</p>";
+		  
+  		    if (e.keyCode === 13) { 
 			  mobileInput.value = '';
 			  handleKey("Enter");
 			}
