@@ -215,6 +215,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var defaultFont = "16px Courier New";
 	    const canvas = document.getElementById("c");
 		const mobileInput = document.getElementById("mobile");
+		var mobileBuffer = "";
 	    const ctx = canvas.getContext("2d");
 		ctx.textBaseline = "top";
 		ctx.textAlign = "left";
@@ -530,11 +531,12 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			}
 			
 			if (evt.data.length > 1) {
+			  mobileBuffer = "";
 			  handleKey("Enter");
 			}
 		  } else if (evt.inputType.toUpperCase() == "insertCompositionText".toUpperCase()) {
-		    if (evt.data.length > 1) {
-			  handleKey(evt.data[evt.data.length-1]);
+		    if (evt.data.length >= 1) {
+			  mobileBuffer = evt.data;
 			}
 		  }
 		});
@@ -544,6 +546,12 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		  debug.innerHTML += "<p>keyup="+e.key+","+e.keyCode+"</p>";
 		  
   		    if (e.keyCode === 13) { 
+			  if (mobileBuffer.length > 0) {
+			  	for(var i=0; i<mobileBuffer.length; i++) {
+			       handleKey(mobileBuffer[i]);
+			    }   
+			  }
+			  mobileBuffer = "";
 			  mobileInput.value = '';
 			  handleKey("Enter");
 			}
