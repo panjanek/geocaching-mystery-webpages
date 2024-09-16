@@ -26,11 +26,18 @@
       <canvas  id="c" width="800" height="480"></canvas>
 	</div>
     <div style="width: min-content;margin: auto;font-family: Courier;padding: 10px;">
-      <input style="font-size: 32px;" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;"/>
+      <input style="font-size: 32px;" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"/>
 	</div>
 	<div class="footer">
 	  <div style="width: min-content;margin: auto;font-family: Courier"><strong>Czarne&nbspOkienko</strong>&nbspby&nbspPanJanek123</div>
 	</div>
+	<div style="display:none;">
+	  <img
+		id="egg2"
+		src="gc2048b.png"
+		width="2048"
+		height="2048" />
+	</div>	
 	<script>
 const questions = [ 
   {
@@ -148,6 +155,18 @@ const folders =
 			  [
 			    {name: "LOG.TXT", access: true, dir:false, data: "\nFTF:\nSTF:\nTTF:\n" },
 				{name: "ASCIIART.TXT", access: true, dir: false, data: "\n\n@@BG@@@@@#G#@@@@B&@@@@?    !@@@@@@@@@@@@@@@@@@@@@@\n@@#~7#@@G...B@#?7@@@@@?    !@@@@@@@@@@@@@@@@@@@@@@\n@@#P7!YGGYPYG?.?@@@@@@?    :?J5G#@@@@@@@@@@@@@@@@@\n@&PPPJ7..~7!.~B@@@@@@@?         .^75#@@@@@@@@@@@@@\n@@@PY#@Y     ?G&@@@@@@?    ^Y?!:    Y@@@@@@@@@@@@@\n@@@@@@#^  !J!. .7G@@@@?    !@@@@BY7G@@@@@@@@@@@@@@\n@@@@@&^  !@@@&P:  ~G@@?    !@@@@@@@@@@@@&PB@@@@@@@\n@@@@@J  .#@@@@@&?^::5@?    !@@@@@@@@@@#7: .G@@@@@@\n@@@@@:  ^@@@@@@@@@@&#@?    !@@@@@@@@@@@?   .B@@@@@\n@@@@&.  ^@@@@@@@@@@@@@?    !@@@@@@@@@@@@7   ~@@@@@\nBBBBP.  :BBBBBBBBBBBBB7    ~BGGGGGGGGGGB5    5BGGG\n                                                  \n                                                  \nPPPPG!   ^GPPPPPPPPPPG7    ~GPPPPPPPPPPPPPPPPPPPPP\n@@@@@G   .#@@@@@@@@@@@J    !@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@7   ^#@@@@@@@@@@J    !@@@@#!~~~~~~~~~^~?G@@@\n@@@@@@&~  .J@@@@@@@@@@J    !@@@@@^        :?G@@@@@\n@@@@@@@&J5&@@@@@@@@@@@J    !@@@@@J     ^?G@@@@@@@@\n@@@@@@@@@@@@@@@P5#@@@@J    !@@@@@B  :?G@@@@@@@@@@@\n@@@@@@@@@@@@@&7  .^7YP7    !@@@@@@^7@@@@@@@@@@@@@@\n@@@@@@@@@@@@@&Y!:          !@@@@@@J^@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@&B5J7~:    !@@@@@@B.B@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@J    !@@@@@@@^J@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@J    !@@@@@@@GG@@@@@@@@@@@@@\n\n" },
+				{name: "GEO.TXT", access: true, dir: false, data: "               _____                           _     _              \n"+
+"              / ____|                         | |   (_)             \n"+
+"             | |  __  ___  ___   ___ __ _  ___| |__  _ _ __   __ _  \n"+
+"             | | |_ |/ _ \\/ _ \\ / __/ _` |/ __| '_ \\| | '_ \\ / _` | \n"+
+"             | |__| |  __/ (_) | (_| (_| | (__| | | | | | | | (_| | \n"+
+"              \\_____|\\___|\\___/ \\___\\__,_|\\___|_| |_|_|_| |_|\\__, | \n"+
+"                          _____       _            _          __/ | \n"+
+"                         |  __ \\     | |          | |        |___/  \n"+ 
+"                         | |__) |   _| | ___ ____ | |               \n"+            
+"                         |  _  / | | | |/ _ \\_  / | |               \n"+           
+"                         | | \\ \\ |_| | |  __// /  |_|               \n"+           
+"                         |_|  \\_\\__,_|_|\\___/___| (_)               \n" },
 				{name: "QUIZ", access: true, dir:true, content:
 				  [
 					{name: "QUIZ.DAT", access: true, dir:false },
@@ -184,7 +203,7 @@ var dosCommands = ["MD", "COPY", "RD", "DEL", "REN", "MKDIR", "RMDIR", "EDIT", "
 
 const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,134611000	,134610968	,268566536	,268566556	,268503032	,268517368	,805421064	,807305228	,
             821084172	,870334476	,864051212	,268460044	,268460044	,134225944	,134230040	,67121176	,33554480	,58720352	,12583104	,7340416	,925440	,122880	,0	 ];
-	
+     
 	    var curX = 0;
 		var curY = 0;
 		var curColor = "white";
@@ -236,7 +255,9 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var mazeSteps = 0;
 		var mazeScore = [];
 		var mazeLevel = 0;
+		var egg2StartT = -1;
 		
+		const egg2MD5 = '7359C3EB5C57547295A76AC1BF775B29';
 		const keySalt = '8bf32485128d4706bad955467948d7b0';
 		const expectedMD5 = 'BF5B41FC8D17EB704799DF457F60F037';
 		const encryptedSolution = '2B133D3B2F60F5461466F8FD219F6E0D06E9C04535493ABC9FC2A0584F30F7E5F90B5E8E7BF99F5427C1B910BE';
@@ -255,7 +276,8 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var answers = ""
 		var invalid = 0;
 		var questionNr = 0;
-		var estereggMode = false;
+		var easterEggMode = false;
+		var easterEggMode2 = false;
 
 		function handleCoursor() {
 			var ms300 = Math.floor(Date.now()/300);
@@ -387,9 +409,16 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				  setColor("yellow");
 				  readCallback(readString);
 				}
-			} else if (estereggMode) {
+			} else if (easterEggMode) {
 			    clearTimeout(easterEggTimeout);
-			    estereggMode = false;
+			    easterEggMode = false;
+				setTimeout(_=> {
+				  newLine();
+				  runPrompt();
+				}, 200);
+			} else if (easterEggMode2) {
+			    easterEggMode2 = false;
+				playerAudio.pause();
 				setTimeout(_=> {
 				  newLine();
 				  runPrompt();
@@ -490,15 +519,15 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 		mobile.addEventListener('input', function(evt) {
 		  
-		  if( evt.inputType == "insertText"){
+		  if( evt.inputType.toUpperCase() == "insertText".toUpperCase()){
 			for(var i=0; i<evt.data.length; i++) {
 			  handleKey(evt.data[i]);
 			}
 		  }
 		});
 		
-		mobile.addEventListener('keypress', function(e){
-            if(e.keyCode === 13) { 
+		mobile.addEventListener('keyup', function(e){
+            if (e.keyCode === 13) { 
 			  mobileInput.value = '';
 			  handleKey("Enter");
 			}
@@ -534,7 +563,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
         }			
 		
 		function easterEggDrop(x, y) {
-		    if (estereggMode) {
+		    if (easterEggMode) {
 				var maxy = h / charHeight;
 				var maxx =w / charWidth	
 				if (y < maxy-1) {
@@ -562,7 +591,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		}
 		
 		function startEesterEgg() {
-		    estereggMode = true;
+		    easterEggMode = true;
 		    coursorVisible(false);
 			var maxx = w / charWidth;	
 			var x = Math.floor(Math.random() * maxx) % maxx;
@@ -1194,6 +1223,96 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
             ctx.fillRect((cx+15)*charWidth, (cy-3)*charHeight, 8, 6*charHeight+4); 		  
 		  }
 		}
+		
+		function egg2Animation(t) {
+		  var img = document.getElementById("egg2");
+		  if (t>0) {
+		    if (egg2StartT == -1) {
+			  egg2StartT = t;
+			} else {
+			  var progress = t - egg2StartT;
+			  var target = 3 + 30000-Math.cos(progress/2250)*30000;
+			  var scale = w/target;
+			  var alpha = t/10000;
+			  var r = Math.ceil(1/scale)*2;
+			  
+			  ctx.fillStyle = "black";
+			  ctx.fillRect(0, 0, w, h);	
+			  
+			  for(var x=-r-1; x<= r+1; x++) {
+			      for(var y = -r-1; y<= r+1; y++) {
+				    var x1 = (x-0.5)*scale*w;
+					var y1 = (y-0.5)*scale*w;
+					
+					var gx = Math.floor(Math.abs(x)) % 32;
+					var gy = Math.floor(Math.abs(y)) % gc.length;
+					var n = gc[gy];
+					var mask = 1 << (32-gx);
+					b = n & mask;
+						
+                    if (!b) {
+						ctx.save();
+						ctx.translate(w/2,h/2);
+						ctx.rotate(alpha);
+						ctx.drawImage(img, x1,y1, w*scale, w*scale); 
+						ctx.restore();
+					}
+				  }
+			  }
+			}
+		  }
+		  
+		  if (easterEggMode2)
+		      window.requestAnimationFrame(egg2Animation);
+		}
+		
+		function runEgg2() {
+		    easterEggMode2 = true;
+			playerAudio = new Audio("zoom.mp3");
+			playerAudio.loop = true;
+			playerAudio.play();			
+			egg2StartT = -1;
+            window.requestAnimationFrame(egg2Animation);
+		}
+		
+		function shutdown(t) {
+		  if (t <= 0) {
+		    if (t == 0) {
+		        playerAudio.pause();
+			  	playerAudio = new Audio("glitch.mp3");
+				playerAudio.play();
+			}
+			if (t>-50) {
+				for(var i=0; i<20; i++) {
+					var x1 = Math.floor(Math.random()*w);
+					var y1 = Math.floor(Math.random()*h);
+					var x2 = Math.floor(Math.random()*(w-x1));
+					var y2 = Math.floor(Math.random()*(h-y1));
+					var kx = 3-Math.random()*6;
+					var ky = 3-Math.random()*6;
+					ctx.drawImage(canvas, x1,y1, x2, y2, x1+kx,y1+ky, x2, y2);
+				}
+				
+				setTimeout(_=>{shutdown(t-1);}, 30+Math.random()*150);
+            } else {
+			   ctx.fillStyle = "#17B106";
+			   ctx.fillRect(0, 0, w, h);				
+			   playerAudio.pause();		   
+			   setTimeout(_=>{
+			     coursorVisible(false);
+				 //TODO
+				 }, 2500);
+			}
+		  } else {
+              if (t==50) {
+			  	playerAudio = new Audio("buzz.mp3");
+				playerAudio.play();
+			  }
+		      moveTo(Math.floor(Math.random()*w/charWidth), Math.floor(Math.random()*(h-2*charHeight)/charHeight));
+			  printText(Math.random() < 0.33 ? "SYSTEM MALFUNCTION" : (Math.random() < 0.35 ? "SEGMENTATION FAULT" : "FATAL ERROR!"));
+			  setTimeout(_=>{shutdown(t-1);}, 10+Math.random()*90);
+		  }
+		}
 
 		function runPrompt() {
 		   coursorVisible(true);
@@ -1207,6 +1326,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			   var lines = command.split(' ');
 		       setColor("lightgreen");
 			   var cmd = lines[0].toUpperCase();
+			   var cmdMD5 = MD5(cmd).toUpperCase();	
 			   var accessDenied = false;
 			   var curDir = curPath[curPath.length-1];
 			   for(var i=0; i<dosCommands.length; i++) {
@@ -1244,6 +1364,9 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			       printText("Volume in drive C is GEOCACHE:)\n");
 			   } else if (cmd==":)") {
 			       startEesterEgg();
+				   return;
+			   } else if (cmdMD5==egg2MD5) {
+			       runEgg2();
 				   return;
 			   } else if (cmd == "TYPE" || cmd == "MORE" || cmd=="CAT") {
 			     if (lines.length == 1) {
@@ -1400,11 +1523,11 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			answers = ""
 			invalid = 0;
 			questionNr = 0;
-			estereggMode = false;
+			easterEggMode = false;
 			setColor("lightgreen");
 			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
-			printText("Build modified by PanJanek123 ;)");newLine();newLine(); 
-			runPrompt();				
+			printText("Build modified by PanJanek123 ;)");newLine();newLine();        
+            runPrompt();			
     	}
 		
         begin();
