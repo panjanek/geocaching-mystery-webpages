@@ -29,7 +29,30 @@
       <canvas  id="c" width="800" height="480"></canvas>
 	</div>
     <div style="width: min-content;margin: auto;font-family: Courier;padding: 10px;">
-      <input style="font-size: 32px;" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <table>
+	    <tr>
+		  <td>
+	        <input style="font-size: 32px;" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"/>
+	      </td>
+		  <td>
+		      <button id="enter" style="font-size: 32px;">&nbsp;&#8626;&nbsp;</button>
+		  </td>
+		  <td>
+		      <table>
+			      <tr>
+				    <td></td>
+					<td><button id="up" data-key="ArrowUp">&#8593;</button></td>
+					<td></td>
+				  </tr>
+				  <tr>
+				    <td><button id="left" data-key="ArrowLeft">&#8592;</button></td>
+					<td><button id="down" data-key="ArrowDown">&#8595;</button></td>
+					<td><button id="right" data-key="ArrowRight">&#8594;</button></td>
+				  </tr>
+			  </table>
+		  </td>
+		<tr>
+      <table>		
 	</div>
 	<div id="debug"><div>
 	<div class="footer">
@@ -215,7 +238,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		var defaultFont = "16px Courier New";
 	    const canvas = document.getElementById("c");
 		const mobileInput = document.getElementById("mobile");
-		var mobileBuffer = "";
 	    const ctx = canvas.getContext("2d");
 		ctx.textBaseline = "top";
 		ctx.textAlign = "left";
@@ -478,12 +500,32 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 		document.onkeydown = function(evt) {
 		    if (snakeMode || mazeMode || (readPrompt && evt.key.length == "ArrowUp")) {
-		      evt.preventDefault();
+			  if (evt.target.id != "mobile")
+		          evt.preventDefault();
 			}
-		    if (evt.target.id != "mobile") {
+		    if (evt.target.id != "mobile" && evt.target.id != "enter" && evt.target.id != "left" &&
+			    evt.target.id != "right" && evt.target.id != "up" && evt.target.id != "down") {
 			    handleKey(evt.key);
 			}
-		};		
+		};
+		
+		function mobileEnter(i) {
+			if (i < mobileInput.value.length) {
+				handleKey(mobileInput.value[i]);
+				setTimeout(_=>{mobileEnter(i+1);}, 10)
+			} else {
+				mobileInput.value = '';
+				handleKey("Enter");
+			}
+		}
+
+        var enter = document.getElementById("enter");
+        //enter.addEventListener('touchend', function(e){e.preventDefault();mobileEnter(0);}, false);
+		enter.addEventListener('click', function(e){e.preventDefault();mobileEnter(0);mobileInput.focus();}, false);
+		document.getElementById("left").addEventListener('click', function(e){e.preventDefault();handleKey(e.target.dataset.key);mobileInput.focus();}, false);
+		document.getElementById("right").addEventListener('click', function(e){e.preventDefault();handleKey(e.target.dataset.key);mobileInput.focus();}, false);
+		document.getElementById("up").addEventListener('click', function(e){e.preventDefault();handleKey(e.target.dataset.key);mobileInput.focus();}, false);
+		document.getElementById("down").addEventListener('click', function(e){e.preventDefault();handleKey(e.target.dataset.key);mobileInput.focus();}, false);
 		
 		function exitAudio() {
 		    clearInterval(audioInterval);
@@ -519,60 +561,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			snakeStep();
 			snakeInterval = setInterval(snakeStep, snakeDelay);		
 		}
-		
-	
-		
-		mobile.addEventListener('input', function(evt) {
-		  var debug =  document.getElementById("debug"); 
-		  debug.innerHTML += "<p>inputType="+evt.inputType+",data="+evt.data+"</p>";
-		  
-		  if( evt.inputType.toUpperCase() == "insertText".toUpperCase() ){
-			
-			if (evt.data == " " && mobileBuffer.length > 0) {
-			  mobileBuffer += evt.data
-			} else {
-				for(var i=0; i<evt.data.length; i++) {
-				  handleKey(evt.data[i]);
-				}
-				
-				if (evt.data.length > 1) {
-				  mobileBuffer = "";
-				  handleKey("Enter");
-				}
-			}
-			
-		  } else if (evt.inputType.toUpperCase() == "insertCompositionText".toUpperCase()) {
-		    if (evt.data.length >= 1) {
-			  mobileBuffer = evt.data;
-			}
-		  }
-		});
-		
-		mobile.addEventListener('keyup', function(e){
-		  var debug =  document.getElementById("debug"); 
-		  debug.innerHTML += "<p>keyup="+e.key+","+e.keyCode+"</p>";
-		  
-  		    if (e.keyCode === 13) { 
-			  if (mobileBuffer.length > 0) {
-			  	for(var i=0; i<mobileBuffer.length; i++) {
-			       handleKey(mobileBuffer[i]);
-			    }   
-			  }
-			  mobileBuffer = "";
-			  mobileInput.value = '';
-			  handleKey("Enter");
-			}
-        });
-		
-		mobile.addEventListener("lostpointercapture", function(e){
-		  var debug =  document.getElementById("debug"); 
-		  debug.innerHTML += "<p>lostpointercapture</p>";		
-		});
-		
-		mobile.addEventListener("focusout", function(e){
-		  var debug =  document.getElementById("debug"); 
-		  debug.innerHTML += "<p>focusout</p>";		
-		});
 
         function readText(callback) {
 		    setColor("lightgreen");
@@ -734,6 +722,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 							   printText(line1);
 							   moveTo(lx, ly+1);
 							   printText(line2);
+							   mobileInput.value = line1 + " " + line2;
 							   newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();
 							   coursorVisible(true);
 							   question(language == "en" ? "Hit enter to finish" : "Naciśnij enter aby wyjść", _=>{
@@ -963,7 +952,6 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 				    snakeStartT = t;
 				}
 				
-				console.log(snakeStartT);
 			    drawSnake(1+t-snakeStartT);
 		        window.requestAnimationFrame(snakeAnimation)
 			}
