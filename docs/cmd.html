@@ -32,7 +32,7 @@
       <table>
 	    <tr>
 		  <td>
-	        <input style="font-size: 32px;" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"/>
+	        <input style="font-size: 32px;width:430;px" type="text" id="mobile" placeholder="tap here on mobile" style="border: 0;" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false"/>
 	      </td>
 		  <td>
 		      <button id="enter" style="font-size: 32px;">&nbsp;&#8626;&nbsp;</button>
@@ -52,9 +52,13 @@
 			  </table>
 		  </td>
 		<tr>
-      <table>		
+      </table>		
 	</div>
-	<div id="debug"><div>
+	<div id="debug"></div>
+    <div style="width: min-content;margin: auto;font-family: Courier; padding: 10px;">
+	  <p id='answers'></p>
+	</div>  
+    <h1 id='solution' style='text-align:center;'></h1>
 	<div class="footer">
 	  <div style="width: min-content;margin: auto;font-family: Courier"><strong>Czarne&nbspOkienko</strong>&nbspby&nbspPanJanek123</div>
 	</div>
@@ -64,7 +68,7 @@
 		src="gc2048b.png"
 		width="2048"
 		height="2048" />
-	</div>	
+	</div>
 	<script>
 const questions = [ 
   {
@@ -723,6 +727,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 							   moveTo(lx, ly+1);
 							   printText(line2);
 							   mobileInput.value = line1 + " " + line2;
+							   document.getElementById('solution').innerHTML = line1 + " " + line2;
 							   newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();newLine();
 							   coursorVisible(true);
 							   question(language == "en" ? "Hit enter to finish" : "Naciśnij enter aby wyjść", _=>{
@@ -763,6 +768,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					newLine();
 					question(language == "en" ? "Hit enter to restart\n" : "Naciśnij enter aby spróbować jeszcze raz", _=>{
 						answers="";
+						document.getElementById('answers').innerHTML = '';
 						questionNr = 0;
 						invalid = 0;
 						askNextQuestion();
@@ -797,6 +803,10 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 					      setColor("lightgray");
 					      printTextSlow(`${nextMsgs[questionNr%nextMsgs.length][language]}` , _=>{
 						  answers+=answer;
+						  answersTxt = document.getElementById('answers').innerHTML;
+						  if (questionNr>0) answersTxt += ',';
+						  answersTxt += answer;
+						  document.getElementById('answers').innerHTML = answersTxt;
 						  questionNr++;
 						  newLine();
 						  askNextQuestion();
@@ -810,6 +820,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 		
 	    function runQuiz() {
 		    answers="";
+			document.getElementById('answers').innerHTML = '';
 			questionNr = 0;
 			invalid = 0;
 	        question("Select language / Wybierz język: pl=Polski (domyślny), en=English: ", function(lang) {
@@ -1556,7 +1567,7 @@ const gc = [0	,2093056	,6323712	,8392576	,16778176	,33816800	,67502192	,13461100
 			setColor("lightgreen");
 			printText("MSDOS 6.22 (c) Microsoft Corp. 1988");newLine(); 
 			printText("Build modified by PanJanek123 ;)");newLine();newLine();        
-            runPrompt();			
+            runPrompt();				
     	}
 		
         begin();
